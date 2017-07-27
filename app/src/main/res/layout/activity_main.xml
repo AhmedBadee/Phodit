@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.spells.phodit.MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/img_view"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="5"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/pick_a_photo" />
+
+        <Button
+            android:id="@+id/choose_img_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:text="@string/pick_a_photo"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/progress_layout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_gravity="center"
+        android:padding="10dp"
+        android:gravity="center"
+        android:layout_margin="10dp">
+
+        <ProgressBar
+            android:id="@+id/saving_progress"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"/>
+
+        <TextView
+            android:id="@+id/loading_textview"
+            android:text="@string/saving"
+            android:textSize="30sp"
+            android:textColor="#ffffff"
+            android:fontFamily="sans-serif-smallcaps"
+            android:background="@drawable/corner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+            android:alpha="0.8"
+            android:backgroundTint="@color/colorPrimaryDark"/>
+
+    </LinearLayout>
+
+</FrameLayout>

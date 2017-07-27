@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:title="@string/save_to_gallery"
+        android:id="@+id/save_to_gallery"
+        android:orderInCategory="1"
+        android:enabled="false"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:title="@string/black_and_white"
+        android:id="@+id/black_and_white"
+        android:orderInCategory="2"
+        android:enabled="false"/>
+
+</menu>

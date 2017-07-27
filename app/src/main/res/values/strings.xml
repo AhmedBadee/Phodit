@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Phodit</string>
+    <string name="pick_a_photo">Pick a photo</string>
+    <string name="black_and_white"><![CDATA[Black & White]]></string>
+    <string name="save_to_gallery">Save</string>
+    <string name="saving">Saving…</string>
+    <string name="working">Working…</string>
+</resources>
