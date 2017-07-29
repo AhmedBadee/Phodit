@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -24,14 +23,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+
+import ImgProcFunctions.BlackAndWhite;
+import ImgProcFunctions.Resize;
+import ImgProcFunctions.SaveToGallery;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -42,13 +39,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private MenuItem save;
     private MenuItem blackAndWhite;
+    private MenuItem resize;
 
     private LinearLayout progressLayout;
 
-    private Uri selectedImage;
     private String imageName;
     private Bitmap selectedImageBitmap;
-    private Bitmap bitmapImageToShow;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -63,16 +59,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        chooseImgBtn = (Button) findViewById(R.id.choose_img_btn);
+        chooseImgBtn     = (Button) findViewById(R.id.choose_img_btn);
         chooseImgBtn.setOnClickListener(this);
 
-        img_view     = (ImageView) findViewById(R.id.img_view);
+        img_view         = (ImageView) findViewById(R.id.img_view);
 
         loading_textview = (TextView) findViewById(R.id.loading_textview);
 
-        saving_progress = (ProgressBar) findViewById(R.id.saving_progress);
+        saving_progress  = (ProgressBar) findViewById(R.id.saving_progress);
 
-        progressLayout = (LinearLayout) findViewById(R.id.progress_layout);
+        progressLayout   = (LinearLayout) findViewById(R.id.progress_layout);
 
         verifyStoragePermissions(MainActivity.this);
     }
@@ -87,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onPrepareOptionsMenu(Menu menu) {
         save = menu.findItem(R.id.save_to_gallery);
         blackAndWhite = menu.findItem(R.id.black_and_white);
+        resize = menu.findItem(R.id.resize);
 
         return true;
     }
@@ -101,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.black_and_white:
                 blackWhite();
+                break;
+            case R.id.resize:
+                resize();
+                break;
+            default:
                 break;
         }
 
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 0) {
-            selectedImage = data.getData();
+            Uri selectedImage = data.getData();
 
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
             Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
@@ -133,7 +135,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 cursor.close();
             }
 
-            img_view.setImageURI(selectedImage);
+            try {
+                selectedImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                Log.e("Bitmap Creation", "Created");
+                img_view.setImageBitmap(selectedImageBitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             updateUI();
         }
@@ -147,11 +155,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new SavingTask().execute();
     }
 
+    private void resize() {
+        new ResizeTask().execute();
+    }
+
     private void updateUI() {
         chooseImgBtn.setVisibility(View.GONE);
 
         save.setEnabled(true);
         blackAndWhite.setEnabled(true);
+        resize.setEnabled(true);
     }
 
     private class SavingTask extends AsyncTask<Void, Void, String> {
@@ -168,37 +181,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         protected String doInBackground(Void... voids) {
 
-            String path = Environment.getExternalStorageDirectory().toString();
-            FileOutputStream outputStream;
-            File directory = new File(path + "/Phodit");
+            String savedImageName;
 
-            if (!directory.exists()) {
-                if (!directory.mkdirs()) {
-                    Log.e("Directory Creation", "Can't Create");
-                } else {
-                    Log.e("Directory Creation", "Successfully Created");
-                }
-            } else {
-                Log.e("Directory Creation", "Exists");
-            }
+            SaveToGallery saveToGallery = new SaveToGallery();
+            saveToGallery.setImageToSave(selectedImageBitmap);
+            saveToGallery.save(imageName);
+            savedImageName = saveToGallery.getSavedImageName();
 
-            String fileName = imageName + "_phodit.jpg";
-            File file = new File(directory.getAbsolutePath() + File.separator + fileName);
-
-            try {
-                outputStream = new FileOutputStream(file);
-
-                bitmapImageToShow.compress(Bitmap.CompressFormat.PNG, 90, outputStream);
-                outputStream.flush();
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{file.toString()}, null,
+            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{savedImageName}, null,
                     (path1, uri) -> Log.e("Scan path", path1));
 
-            return file.toString();
+            return savedImageName;
         }
 
         @Override
@@ -223,21 +216,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         protected Void doInBackground(Void... voids) {
-            try {
-                selectedImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                Log.e("Bitmap Creation", "Created");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
-            if (selectedImageBitmap != null) {
-                Mat selectedImageMat = new Mat(selectedImageBitmap.getHeight(), selectedImageBitmap.getWidth(), CvType.CV_8UC3);
-                Utils.bitmapToMat(selectedImageBitmap, selectedImageMat);
-                Imgproc.cvtColor(selectedImageMat, selectedImageMat, Imgproc.COLOR_BGR2GRAY);
+            BlackAndWhite blackAndWhiteFunction = new BlackAndWhite();
+            blackAndWhiteFunction.setSelectedImage(selectedImageBitmap);
+            blackAndWhiteFunction.applyConversion();
+            selectedImageBitmap = blackAndWhiteFunction.getBitmapImageToShow();
 
-                Log.e("Color Conversion", "Converted");
-                bitmapImageToShow = Bitmap.createBitmap(selectedImageMat.width(), selectedImageMat.height(), Bitmap.Config.ARGB_8888);
-                Utils.matToBitmap(selectedImageMat, bitmapImageToShow);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            img_view.setImageBitmap(selectedImageBitmap);
+
+            progressLayout.setVisibility(View.INVISIBLE);
+            loading_textview.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private class ResizeTask extends AsyncTask<Void, Void, Void> {
+
+        Resize resize = new Resize(MainActivity.this);
+        boolean sizeInserted = false;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            resize.setSelectedImage(selectedImageBitmap);
+            sizeInserted = resize.setWidthAndHeight();
+
+            /* loading_textview.setVisibility(View.VISIBLE);
+            loading_textview.setText(R.string.working);
+            progressLayout.setVisibility(View.VISIBLE); */
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            while (sizeInserted) {
+                resize.resizeImage();
+                selectedImageBitmap = resize.getSelectedImageBitmap();
+                return null;
             }
 
             return null;
@@ -247,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            img_view.setImageBitmap(bitmapImageToShow);
+            img_view.setImageBitmap(selectedImageBitmap);
 
             progressLayout.setVisibility(View.INVISIBLE);
             loading_textview.setVisibility(View.INVISIBLE);
