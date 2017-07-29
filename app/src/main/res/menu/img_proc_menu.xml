@@ -14,4 +14,10 @@
         android:orderInCategory="2"
         android:enabled="false"/>
 
+    <item
+        android:title="@string/resize"
+        android:id="@+id/resize"
+        android:orderInCategory="3"
+        android:enabled="false"/>
+
 </menu>
