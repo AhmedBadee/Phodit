@@ -1,0 +1,100 @@
+package ImgProcFunctions;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.text.InputType;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
+public class Resize {
+
+    private int width;
+    private int height;
+
+    private Context mainActivityContext;
+
+    private Bitmap selectedImageBitmap;
+
+    public Resize(Context mainActivityContext) {
+        this.mainActivityContext = mainActivityContext;
+    }
+
+    public void setSelectedImage(Bitmap selectedImageBitmap) {
+        this.selectedImageBitmap = selectedImageBitmap;
+    }
+
+    public boolean setWidthAndHeight() {
+        final boolean[] sizeInserted = new boolean[1];
+
+        LinearLayout layout = new LinearLayout(mainActivityContext);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mainActivityContext);
+        alertDialog.setTitle("Resize");
+
+        final EditText widthInput = new EditText(mainActivityContext);
+        widthInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        widthInput.setHint("Width");
+        layout.addView(widthInput);
+
+        final EditText heightInput = new EditText(mainActivityContext);
+        heightInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        widthInput.setHint("Height");
+        layout.addView(heightInput);
+
+        alertDialog.setView(layout);
+
+        alertDialog.setPositiveButton("Apply", (dialogInterface, i) -> {
+            setWidth(Integer.valueOf(widthInput.getText().toString()));
+            setHeight(Integer.valueOf(heightInput.getText().toString()));
+            sizeInserted[0] = true;
+        });
+
+        alertDialog.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
+
+        alertDialog.show();
+
+        return sizeInserted[0];
+    }
+
+    public void resizeImage() {
+        if (selectedImageBitmap != null) {
+            Mat selectedImageMat = new Mat(selectedImageBitmap.getHeight(), selectedImageBitmap.getWidth(), CvType.CV_8UC3);
+            Utils.bitmapToMat(selectedImageBitmap, selectedImageMat);
+
+            Mat resized = new Mat();
+            Size newSize = new Size(getWidth(), getHeight());
+            Imgproc.resize(selectedImageMat, resized, newSize);
+
+            selectedImageBitmap = Bitmap.createBitmap(selectedImageMat.width(), selectedImageMat.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(resized, selectedImageBitmap);
+        }
+    }
+
+    private void setWidth(int width) {
+        this.width = width;
+    }
+
+    private int getWidth() {
+        return width;
+    }
+
+    private void setHeight(int height) {
+        this.height = height;
+    }
+
+    private int getHeight() {
+        return height;
+    }
+
+    public Bitmap getSelectedImageBitmap() {
+        return selectedImageBitmap;
+    }
+}
