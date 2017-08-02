@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="main"><source path="/mnt/second/Shakhbata/AndroidWS/Phodit/openCVLibrary320/src/main/shaders"/></dataSet><dataSet config="debug"><source path="/mnt/second/Shakhbata/AndroidWS/Phodit/openCVLibrary320/src/debug/shaders"/></dataSet></merger>
+<merger version="3"><dataSet config="main"><source path="/run/media/root/09F30A1509F30A15/Shakhbata/AndroidWS/Phodit/openCVLibrary320/src/main/shaders"/></dataSet><dataSet config="debug"><source path="/run/media/root/09F30A1509F30A15/Shakhbata/AndroidWS/Phodit/openCVLibrary320/src/debug/shaders"/></dataSet></merger>

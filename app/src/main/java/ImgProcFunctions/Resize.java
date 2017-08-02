@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.InputType;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.opencv.android.Utils;
@@ -22,16 +23,18 @@ public class Resize {
 
     private Bitmap selectedImageBitmap;
 
+    private ImageView img_view;
+
     public Resize(Context mainActivityContext) {
         this.mainActivityContext = mainActivityContext;
     }
 
-    public void setSelectedImage(Bitmap selectedImageBitmap) {
+    public void setSelectedImage(Bitmap selectedImageBitmap, ImageView img_view) {
         this.selectedImageBitmap = selectedImageBitmap;
+        this.img_view = img_view;
     }
 
-    public boolean setWidthAndHeight() {
-        final boolean[] sizeInserted = new boolean[1];
+    public void setWidthAndHeight() {
 
         LinearLayout layout = new LinearLayout(mainActivityContext);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -46,7 +49,7 @@ public class Resize {
 
         final EditText heightInput = new EditText(mainActivityContext);
         heightInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        widthInput.setHint("Height");
+        heightInput.setHint("Height");
         layout.addView(heightInput);
 
         alertDialog.setView(layout);
@@ -54,17 +57,17 @@ public class Resize {
         alertDialog.setPositiveButton("Apply", (dialogInterface, i) -> {
             setWidth(Integer.valueOf(widthInput.getText().toString()));
             setHeight(Integer.valueOf(heightInput.getText().toString()));
-            sizeInserted[0] = true;
+            resizeImage();
+            img_view.setImageBitmap(selectedImageBitmap);
         });
 
         alertDialog.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.cancel());
 
         alertDialog.show();
 
-        return sizeInserted[0];
     }
 
-    public void resizeImage() {
+    private void resizeImage() {
         if (selectedImageBitmap != null) {
             Mat selectedImageMat = new Mat(selectedImageBitmap.getHeight(), selectedImageBitmap.getWidth(), CvType.CV_8UC3);
             Utils.bitmapToMat(selectedImageBitmap, selectedImageMat);
@@ -73,7 +76,7 @@ public class Resize {
             Size newSize = new Size(getWidth(), getHeight());
             Imgproc.resize(selectedImageMat, resized, newSize);
 
-            selectedImageBitmap = Bitmap.createBitmap(selectedImageMat.width(), selectedImageMat.height(), Bitmap.Config.ARGB_8888);
+            selectedImageBitmap = Bitmap.createBitmap(resized.width(), resized.height(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(resized, selectedImageBitmap);
         }
     }
@@ -92,9 +95,5 @@ public class Resize {
 
     private int getHeight() {
         return height;
-    }
-
-    public Bitmap getSelectedImageBitmap() {
-        return selectedImageBitmap;
     }
 }

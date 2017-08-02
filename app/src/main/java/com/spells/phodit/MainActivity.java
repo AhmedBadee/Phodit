@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -44,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayout progressLayout;
 
     private String imageName;
-    private Bitmap selectedImageBitmap;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             try {
-                selectedImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                Bitmap selectedImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
                 Log.e("Bitmap Creation", "Created");
                 img_view.setImageBitmap(selectedImageBitmap);
             } catch (IOException e) {
@@ -156,7 +156,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void resize() {
-        new ResizeTask().execute();
+
+        Bitmap imageToWorkOn = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
+
+        Resize resize = new Resize(MainActivity.this);
+        resize.setSelectedImage(imageToWorkOn, img_view);
+        resize.setWidthAndHeight();
     }
 
     private void updateUI() {
@@ -168,6 +173,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private class SavingTask extends AsyncTask<Void, Void, String> {
+
+        Bitmap imageToWorkOn = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
 
         @Override
         protected void onPreExecute() {
@@ -184,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String savedImageName;
 
             SaveToGallery saveToGallery = new SaveToGallery();
-            saveToGallery.setImageToSave(selectedImageBitmap);
+            saveToGallery.setImageToSave(imageToWorkOn);
             saveToGallery.save(imageName);
             savedImageName = saveToGallery.getSavedImageName();
 
@@ -205,6 +212,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private class BlackAndWhiteTask extends AsyncTask<Void, Void, Void> {
 
+        Bitmap imageToWorkOn = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -218,9 +227,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         protected Void doInBackground(Void... voids) {
 
             BlackAndWhite blackAndWhiteFunction = new BlackAndWhite();
-            blackAndWhiteFunction.setSelectedImage(selectedImageBitmap);
+            blackAndWhiteFunction.setSelectedImage(imageToWorkOn);
             blackAndWhiteFunction.applyConversion();
-            selectedImageBitmap = blackAndWhiteFunction.getBitmapImageToShow();
+            imageToWorkOn = blackAndWhiteFunction.getBitmapImageToShow();
 
             return null;
         }
@@ -229,47 +238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            img_view.setImageBitmap(selectedImageBitmap);
-
-            progressLayout.setVisibility(View.INVISIBLE);
-            loading_textview.setVisibility(View.INVISIBLE);
-        }
-    }
-
-    private class ResizeTask extends AsyncTask<Void, Void, Void> {
-
-        Resize resize = new Resize(MainActivity.this);
-        boolean sizeInserted = false;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            resize.setSelectedImage(selectedImageBitmap);
-            sizeInserted = resize.setWidthAndHeight();
-
-            /* loading_textview.setVisibility(View.VISIBLE);
-            loading_textview.setText(R.string.working);
-            progressLayout.setVisibility(View.VISIBLE); */
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-
-            while (sizeInserted) {
-                resize.resizeImage();
-                selectedImageBitmap = resize.getSelectedImageBitmap();
-                return null;
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            img_view.setImageBitmap(selectedImageBitmap);
+            img_view.setImageBitmap(imageToWorkOn);
 
             progressLayout.setVisibility(View.INVISIBLE);
             loading_textview.setVisibility(View.INVISIBLE);

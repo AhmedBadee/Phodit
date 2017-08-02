@@ -5,28 +5,26 @@ android {
     buildToolsVersion "26.0.0"
     defaultConfig {
         applicationId "com.spells.phodit"
-        minSdkVersion 22
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        // TODO 1: enable jackOptions
         jackOptions {
             enabled true
         }
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
-    // TODO 2: add the compile Options
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
 }
 
