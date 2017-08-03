@@ -41,10 +41,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MenuItem save;
     private MenuItem blackAndWhite;
     private MenuItem resize;
+    private MenuItem undo;
 
     private LinearLayout progressLayout;
 
     private String imageName;
+
+    private Bitmap beforeLastChange;
+    private int actionsCounter = 0;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -84,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         save = menu.findItem(R.id.save_to_gallery);
         blackAndWhite = menu.findItem(R.id.black_and_white);
         resize = menu.findItem(R.id.resize);
+        undo = menu.findItem(R.id.undo);
 
         return true;
     }
@@ -101,6 +106,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.resize:
                 resize();
+                break;
+            case R.id.undo:
+                undo();
                 break;
             default:
                 break;
@@ -148,14 +156,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void blackWhite() {
+        beforeLastChange = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
+        actionsCounter += 1;
+
         new BlackAndWhiteTask().execute();
     }
 
     private void saveImgToGallery() {
+        beforeLastChange = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
+        actionsCounter += 1;
+
         new SavingTask().execute();
     }
 
     private void resize() {
+        beforeLastChange = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
+        actionsCounter += 1;
 
         Bitmap imageToWorkOn = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
 
@@ -164,9 +180,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         resize.setWidthAndHeight();
     }
 
+    private void undo() {
+        if (actionsCounter != 0) {
+            img_view.setImageBitmap(beforeLastChange);
+        } else {
+            chooseImgBtn.setVisibility(View.VISIBLE);
+            img_view.setImageBitmap(beforeLastChange);
+        }
+
+    }
+
     private void updateUI() {
         chooseImgBtn.setVisibility(View.GONE);
 
+        undo.setEnabled(true);
         save.setEnabled(true);
         blackAndWhite.setEnabled(true);
         resize.setEnabled(true);
