@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import ImgProcFunctions.BlackAndWhite;
 import ImgProcFunctions.Resize;
+import ImgProcFunctions.Rotate;
 import ImgProcFunctions.SaveToGallery;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -38,10 +39,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView loading_textview;
     private ProgressBar saving_progress;
 
+    private Button rotate_left_button;
+    private Button rotate_right_button;
+
+    private LinearLayout rotateLayout;
+
     private MenuItem save;
     private MenuItem blackAndWhite;
     private MenuItem resize;
     private MenuItem undo;
+    private MenuItem rotate;
 
     private LinearLayout progressLayout;
 
@@ -74,6 +81,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         progressLayout   = (LinearLayout) findViewById(R.id.progress_layout);
 
+        rotate_left_button  = (Button) findViewById(R.id.rotate_left_button);
+        rotate_right_button = (Button) findViewById(R.id.rotate_right_button);
+
+        rotateLayout = (LinearLayout) findViewById(R.id.rotate_buttons);
+
+        rotate_left_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rotate("left");
+            }
+        });
+
+        rotate_right_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                rotate("right");
+            }
+        });
+
         verifyStoragePermissions(MainActivity.this);
     }
 
@@ -85,10 +111,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        save = menu.findItem(R.id.save_to_gallery);
+        save          = menu.findItem(R.id.save_to_gallery);
         blackAndWhite = menu.findItem(R.id.black_and_white);
-        resize = menu.findItem(R.id.resize);
-        undo = menu.findItem(R.id.undo);
+        resize        = menu.findItem(R.id.resize);
+        undo          = menu.findItem(R.id.undo);
+        rotate        = menu.findItem(R.id.rotate);
 
         return true;
     }
@@ -109,6 +136,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.undo:
                 undo();
+                break;
+            case R.id.rotate:
+                rotateLayout.setVisibility(View.VISIBLE);
                 break;
             default:
                 break;
@@ -187,7 +217,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             chooseImgBtn.setVisibility(View.VISIBLE);
             img_view.setImageBitmap(beforeLastChange);
         }
+    }
 
+    private void rotate(String direction) {
+        beforeLastChange = ((BitmapDrawable) img_view.getDrawable()).getBitmap();
+        actionsCounter += 1;
+
+        Bitmap imageToWorkOn = beforeLastChange;
+
+        Rotate rotate = new Rotate(img_view);
+        rotate.setSelectedImageBitmap(imageToWorkOn);
+
+        if (direction.contains("left")) {
+            rotate.rotateLeft();
+        } else if (direction.contains("right")) {
+            rotate.rotateRight();
+        }
     }
 
     private void updateUI() {
@@ -197,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         save.setEnabled(true);
         blackAndWhite.setEnabled(true);
         resize.setEnabled(true);
+        rotate.setEnabled(true);
     }
 
     private class SavingTask extends AsyncTask<Void, Void, String> {

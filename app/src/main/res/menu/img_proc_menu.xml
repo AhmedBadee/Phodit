@@ -27,4 +27,10 @@
         android:orderInCategory="4"
         android:enabled="false"/>
 
+    <item
+        android:title="@string/rotate"
+        android:id="@+id/rotate"
+        android:orderInCategory="5"
+        android:enabled="false"/>
+
 </menu>

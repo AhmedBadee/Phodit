@@ -12,6 +12,7 @@ public class BlackAndWhite {
 
     private Bitmap selectedImageBitmap;
     private Bitmap bitmapImageToShow;
+
     public BlackAndWhite() {
     }
 
